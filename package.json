@@ -9,6 +9,7 @@
     "axios": "^1.1.3",
     "bootstrap": "^5.2.2",
     "eslint": "8.22.0",
+    "flat": "^5.0.2",
     "jointjs": "^3.6.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
