@@ -186,6 +186,20 @@ function putCellsToMapCells (cells, mapCells) {
         mapCells.push({ cell, x: 0, y: 0 });
     })
 }
+var connect = function(source, sourcePort, target, targetPort) {
+    var link = new joint.shapes.devs.Link({
+        source: {
+            id: source.id,
+            port: sourcePort
+        },
+        target: {
+            id: target.id,
+            port: targetPort
+        }
+    });
+
+    link.addTo(graph).reparent();
+};
 function App() {
     const jsonData = data;
     var namespace = joint.shapes;

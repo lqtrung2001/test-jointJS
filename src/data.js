@@ -49,11 +49,13 @@ const data = [
     },
     {
         "id": "A2",
-        "type": "A"
+        "type": "A",
+        "state": "ok"
     },
     {
         "id": "A3",
-        "type": "A"
+        "type": "A",
+        "state": "nok"
     },
     {
         "id": "A4",
