@@ -1,5 +1,9 @@
 const data = [
     {
+        "id": "A1",
+        "type": "A"
+    },
+    {
         "id": "B1",
         "type": "B",
         "dependencies":
@@ -10,11 +14,6 @@ const data = [
                 {
                     "type": "Task",
                     "id": "A1",
-                    "state": "ok"
-                },
-                {
-                    "type": "Task",
-                    "id": "A2",
                     "state": "ok"
                 },
                 {
@@ -30,16 +29,23 @@ const data = [
                             "type": "Task",
                             "id": "A4",
                             "state": "ok"
+                        },
+                        {
+                            "type": "Task",
+                            "id": "A5",
+                            "state": "ok"
                         }
                     ]
-                }
+                },
+                {
+                    "type": "Task",
+                    "id": "A2",
+                    "state": "ok"
+                },
+               
             ],
 
         }
-    },
-    {
-        "id": "A1",
-        "type": "A"
     },
     {
         "id": "A2",
@@ -52,6 +58,11 @@ const data = [
     {
         "id": "A4",
         "type": "A"
-    }
+    },
+    {
+        "id": "A5",
+        "type": "A"
+    },
+   
 ]
 export default data
