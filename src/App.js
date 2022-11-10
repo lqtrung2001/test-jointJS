@@ -154,7 +154,7 @@ function addToMapCells(jsonData, mapCells) {
         }
     });
 }
-const deepDiveMapCells = (node,  mapCells) => {
+const deepDiveMapCells = (node, mapCells) => {
     let flag = 0;
     x++;
     for (const key in node) {
@@ -181,12 +181,12 @@ function setPosition(cells, mapCells) {
         cell.position = { x: cell.position.x - mapCells[index].x * 350, y: cell.position.y + mapCells[index].y * 250 }
     })
 }
-function putCellsToMapCells (cells, mapCells) {
+function putCellsToMapCells(cells, mapCells) {
     cells.forEach(cell => {
         mapCells.push({ cell, x: 0, y: 0 });
     })
 }
-var connect = function(source, sourcePort, target, targetPort) {
+var connect = function (source, sourcePort, target, targetPort, graph) {
     var link = new joint.shapes.devs.Link({
         source: {
             id: source.id,
@@ -200,27 +200,96 @@ var connect = function(source, sourcePort, target, targetPort) {
 
     link.addTo(graph).reparent();
 };
+var c1 = new joint.shapes.devs.Coupled({
+    position: {
+        x: 230,
+        y: 50
+    },
+    size: {
+        width: 300,
+        height: 300
+    }
+});
+
+c1.set('inPorts', ['in']);
+c1.set('outPorts', ['out 1', 'out 2']);
+
+var a1 = new joint.shapes.devs.Model({
+    position: {
+        x: 360,
+        y: 260
+    },
+    attrs: {
+        '.label': { text: 'ccc', 'ref-x': .4, 'ref-y': .2 },
+        rect: { fill: '#2ECC71' },
+        '.inPorts circle': { fill: '#16A085' },
+        '.outPorts circle': { fill: '#E74C3C' }
+    },
+    inPorts: ['xy'],
+    outPorts: ['x', 'y']
+});
+
+var a2 = new joint.shapes.devs.Atomic({
+    position: {
+        x: 50,
+        y: 160
+    },
+    outPorts: ['out']
+});
+
+var a3 = new joint.shapes.devs.Atomic({
+    position: {
+        x: 650,
+        y: 50
+    },
+    attrs: {
+        'text': 'aaaa'
+    },
+    size: {
+        width: 100,
+        height: 300
+    },
+    inPorts: ['aa', 'b']
+});
+
+[c1, a1, a2, a3].forEach(function (element) {
+    element.attr({
+        '.body': {
+            'rx': 6,
+            'ry': 6
+        },
+
+    });
+});
 function App() {
     const jsonData = data;
     var namespace = joint.shapes;
     var cells = [];
     var links = [];
     const mapCells = []
-    
+
 
     addToCells(jsonData, cells, links, mapCells)
     putCellsToMapCells(cells, mapCells)
     addToMapCells(jsonData, mapCells)
     setYforMapCells(mapCells)
     setPosition(cells, mapCells);
-    
+
     console.log('data', cells)
     console.log('data map', mapCells)
 
     var graph = new joint.dia.Graph({}, { cellNamespace: namespace });
     graph.resetCells([...cells, ...links]);
 
+    graph.addCells([c1, a1, a2, a3]);
 
+    c1.embed(a1);
+    connect(a2, 'out', c1, 'in', graph);
+    connect(c1, 'in', a1, 'xy', graph);
+    connect(a1, 'x', c1, 'out 1', graph);
+    connect(a1, 'y', c1, 'out 2', graph);
+    connect(c1, 'out 1', a3, 'aa', graph);
+    connect(c1, 'out 2', a3, 'b', graph);
     useEffect(() => {
 
         var paper = new joint.dia.Paper({
@@ -230,6 +299,25 @@ function App() {
             height: '100%',
             gridSize: 20,
             cellViewNamespace: namespace,
+            snapLinks: true,
+            linkPinning: false,
+            embeddingMode: true,
+            clickThreshold: 5,
+            defaultConnectionPoint: { name: 'boundary' },
+            highlighting: {
+                'default': {
+                    name: 'stroke',
+                    options: {
+                        padding: 6
+                    }
+                },
+                'embedding': {
+                    name: 'addClass',
+                    options: {
+                        className: 'highlighted-parent'
+                    }
+                }
+            },
         });
         zoompaper(paper);
 
