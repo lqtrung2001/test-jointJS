@@ -200,67 +200,165 @@ var connect = function (source, sourcePort, target, targetPort, graph) {
 
     link.addTo(graph).reparent();
 };
-var c1 = new joint.shapes.devs.Coupled({
-    position: {
-        x: 230,
-        y: 50
-    },
-    size: {
-        width: 300,
-        height: 300
-    }
-});
+var connect = function (source, sourcePort, target, targetPort, graph) {
 
-c1.set('inPorts', ['in']);
-c1.set('outPorts', ['out 1', 'out 2']);
-
-var a1 = new joint.shapes.devs.Model({
-    position: {
-        x: 360,
-        y: 260
-    },
-    attrs: {
-        '.label': { text: 'ccc', 'ref-x': .4, 'ref-y': .2 },
-        rect: { fill: '#2ECC71' },
-        '.inPorts circle': { fill: '#16A085' },
-        '.outPorts circle': { fill: '#E74C3C' }
-    },
-    inPorts: ['xy'],
-    outPorts: ['x', 'y']
-});
-
-var a2 = new joint.shapes.devs.Atomic({
-    position: {
-        x: 50,
-        y: 160
-    },
-    outPorts: ['out']
-});
-
-var a3 = new joint.shapes.devs.Atomic({
-    position: {
-        x: 650,
-        y: 50
-    },
-    attrs: {
-        'text': 'aaaa'
-    },
-    size: {
-        width: 100,
-        height: 300
-    },
-    inPorts: ['aa', 'b']
-});
-
-[c1, a1, a2, a3].forEach(function (element) {
-    element.attr({
-        '.body': {
-            'rx': 6,
-            'ry': 6
+    var link = new joint.shapes.standard.Link({
+        source: {
+            id: source.id,
+            port: sourcePort
         },
-
+        target: {
+            id: target.id,
+            port: targetPort
+        }
     });
-});
+
+    link.addTo(graph).reparent();
+};
+// Actions
+// có dấu X ở cái link để xóa nó đi
+function showLinkTools(linkView) {
+    var tools = new joint.dia.ToolsView({
+        tools: [
+            new joint.linkTools.Remove({
+                distance: '50%',
+                markup: [{
+                    tagName: 'circle',
+                    selector: 'button',
+                    attributes: {
+                        'r': 7,
+                        'fill': '#f6f6f6',
+                        'stroke': '#ff5148',
+                        'stroke-width': 2,
+                        'cursor': 'pointer'
+                    }
+                }, {
+                    tagName: 'path',
+                    selector: 'icon',
+                    attributes: {
+                        'd': 'M -3 -3 3 3 M -3 3 3 -3',
+                        'fill': 'none',
+                        'stroke': '#ff5148',
+                        'stroke-width': 2,
+                        'pointer-events': 'none'
+                    }
+                }]
+            })
+        ]
+    });
+    linkView.addTools(tools);
+}
+var portsIn = {
+    position: {
+        name: 'left'
+    },
+    attrs: {
+        portBody: {
+            magnet: 'passive',
+            r: 10,
+            fill: '#087047',
+            stroke: '#023047'
+        }
+    },
+    label: {
+        position: {
+            name: 'left',
+            args: { y: 6 }
+        },
+        markup: [{
+            tagName: 'text',
+            selector: 'label',
+            className: 'label-text'
+        }]
+    },
+    markup: [{
+        tagName: 'circle',
+        selector: 'portBody'
+    }]
+};
+
+var portsOut = {
+    position: {
+        name: 'right'
+    },
+    attrs: {
+        portBody: {
+            magnet: true,
+            r: 10,
+            fill: '#E6A502',
+            stroke: '#023047'
+        }
+    },
+    label: {
+        position: {
+            name: 'right',
+            args: { y: 6 }
+        },
+        markup: [{
+            tagName: 'text',
+            selector: 'label',
+            className: 'label-text'
+        }]
+    },
+    markup: [{
+        tagName: 'circle',
+        selector: 'portBody'
+    }]
+};
+var makeModel = (text) => {
+    let a = new joint.shapes.standard.Rectangle({
+        position: { x: 125, y: 50 },
+        size: { width: 90, height: 90 },
+        attrs: {
+            root: {
+                magnet: false
+            },
+            body: {
+                fill: '#8ECAE6',
+            },
+            label: {
+                text,
+                fontSize: 16,
+                y: -10
+            }
+        },
+        ports: {
+            groups: {
+                'in': portsIn,
+                'out': portsOut
+            }
+        }
+    });
+    return a;
+};
+const ports = [
+    {
+        id: 'in1',
+        group: 'in',
+        attrs: { label: { text: 'in1' } }
+    },
+    {
+        id: 'in2',
+        group: 'in',
+        attrs: { label: { text: 'in2' } }
+    },
+    {
+        id: 'out1',
+        group: 'out',
+        attrs: { label: { text: 'out1' } }
+    },
+    {
+        id: 'out2',
+        group: 'out',
+        attrs: { label: { text: 'out2' } }
+    }
+]
+const model = makeModel('trung')
+model.addPorts(ports);
+const model2 = makeModel('trung').translate(300, 0)
+model2.addPorts(ports);
+// var model2 = model.clone().translate(300, 0).attr('label/text', 'Model 2');
+
 function App() {
     const jsonData = data;
     var namespace = joint.shapes;
@@ -281,15 +379,9 @@ function App() {
     var graph = new joint.dia.Graph({}, { cellNamespace: namespace });
     graph.resetCells([...cells, ...links]);
 
-    graph.addCells([c1, a1, a2, a3]);
+    graph.addCells(model, model2);
+    connect(model, 'out2', model2, 'in1', graph);
 
-    c1.embed(a1);
-    connect(a2, 'out', c1, 'in', graph);
-    connect(c1, 'in', a1, 'xy', graph);
-    connect(a1, 'x', c1, 'out 1', graph);
-    connect(a1, 'y', c1, 'out 2', graph);
-    connect(c1, 'out 1', a3, 'aa', graph);
-    connect(c1, 'out 2', a3, 'b', graph);
     useEffect(() => {
 
         var paper = new joint.dia.Paper({
@@ -299,28 +391,39 @@ function App() {
             height: '100%',
             gridSize: 20,
             cellViewNamespace: namespace,
-            snapLinks: true,
-            linkPinning: false,
-            embeddingMode: true,
-            clickThreshold: 5,
-            defaultConnectionPoint: { name: 'boundary' },
-            highlighting: {
-                'default': {
-                    name: 'stroke',
-                    options: {
-                        padding: 6
-                    }
-                },
-                'embedding': {
-                    name: 'addClass',
-                    options: {
-                        className: 'highlighted-parent'
+            gridSize: 1,
+            model: graph,
+            linkPinning: false, // Prevent link being dropped in blank paper area
+            defaultLink: () => new joint.shapes.standard.Link({
+                attrs: {
+                    wrapper: {
+                        cursor: 'default'
                     }
                 }
+            }),
+            defaultConnectionPoint: { name: 'boundary' },
+            validateConnection: function (cellViewS, magnetS, cellViewT, magnetT, end, linkView) {
+                // Prevent linking from output ports to input ports within one element.
+                if (cellViewS === cellViewT) return false;
+                // Prevent linking to output ports.
+                return magnetT && magnetT.getAttribute('port-group') === 'in';
             },
+            validateMagnet: function (cellView, magnet) {
+                // Note that this is the default behaviour. It is shown for reference purposes.
+                // Disable linking interaction for magnets marked as passive.
+                return magnet.getAttribute('magnet') !== 'passive';
+            },
+            // Enable mark available for cells & magnets
+            markAvailable: true
         });
         zoompaper(paper);
-
+        paper.on('link:mouseenter', (linkView) => {
+            showLinkTools(linkView);
+        });
+        
+        paper.on('link:mouseleave', (linkView) => {
+            linkView.removeTools();
+        });
     }, []);
 
     return (
