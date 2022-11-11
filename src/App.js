@@ -77,12 +77,18 @@ function zoompaper(paper) {
     });
 }
 
-function addToCells(jsonData, cells, links) {
+function addToCells(jsonData, cells, links, testModel) {
 
     jsonData.forEach(task => {
         // console.log( 'flattan',flattenJSON(jsonData));
         let cell = makeCell("standard.Rectangle", task.id, task.id);
         cells.push(cell);
+
+        let model = makeModel(task.id, task.id +'a')
+        model.addPorts(ports);
+        testModel.push(model);
+        // console.log('testModel: ', testModel);
+
         if (task.dependencies) {
             if (task.dependencies.type === "LogicalOperator") {
                 // console.log("collected: ", deepDive(task.dependencies.elements, "", cells))
@@ -141,6 +147,8 @@ function setYforMapCells(mapCells) {
 }
 
 function addToMapCells(jsonData, mapCells) {
+
+    console.log(mapCells)
     jsonData.forEach(task => {
         if (task.dependencies) {
             if (task.dependencies.type === "LogicalOperator") {
@@ -186,8 +194,10 @@ function putCellsToMapCells(cells, mapCells) {
         mapCells.push({ cell, x: 0, y: 0 });
     })
 }
-var connect = function (source, sourcePort, target, targetPort, graph) {
-    var link = new joint.shapes.devs.Link({
+
+const connect = function (source, sourcePort, target, targetPort, graph) {
+
+    let link = new joint.shapes.standard.Link({
         source: {
             id: source.id,
             port: sourcePort
@@ -200,25 +210,11 @@ var connect = function (source, sourcePort, target, targetPort, graph) {
 
     link.addTo(graph).reparent();
 };
-var connect = function (source, sourcePort, target, targetPort, graph) {
 
-    var link = new joint.shapes.standard.Link({
-        source: {
-            id: source.id,
-            port: sourcePort
-        },
-        target: {
-            id: target.id,
-            port: targetPort
-        }
-    });
-
-    link.addTo(graph).reparent();
-};
 // Actions
 // có dấu X ở cái link để xóa nó đi
 function showLinkTools(linkView) {
-    var tools = new joint.dia.ToolsView({
+    let tools = new joint.dia.ToolsView({
         tools: [
             new joint.linkTools.Remove({
                 distance: '50%',
@@ -248,7 +244,7 @@ function showLinkTools(linkView) {
     });
     linkView.addTools(tools);
 }
-var portsIn = {
+const portsIn = {
     position: {
         name: 'left'
     },
@@ -277,7 +273,7 @@ var portsIn = {
     }]
 };
 
-var portsOut = {
+const portsOut = {
     position: {
         name: 'right'
     },
@@ -305,9 +301,122 @@ var portsOut = {
         selector: 'portBody'
     }]
 };
-var makeModel = (text) => {
+const ellipsePortsOut = {
+    position: {
+        name: 'right'
+    },
+    attrs: {
+        portBody: {
+            magnet: true,
+            r: 10,
+            fill: '#E6A502',
+            stroke:'#023047'
+        }
+    },
+    label: {
+        position: {
+            name: 'right',
+            args: { y: 6 }
+        },
+        markup: [{
+            tagName: 'text',
+            selector: 'label',
+            className: 'label-text'
+        }]
+    },
+    markup: [{
+        tagName: 'circle',
+        selector: 'portBody'
+    }]
+};
+const ellipsePortsIn = {
+    position: {
+        name: 'ellipseSpread',
+        args: {
+            dx: 1,
+            dy: 1,
+            dr: 1,
+            startAngle: 220,
+            step: 50,
+            compensateRotation: false
+        }
+    },
+    attrs: {
+        portBody: {
+            magnet: true,
+            r: 10,
+            fill: '#023047',
+            stroke: '#023047'
+        }
+    },
+    label: {
+        position: {
+            name: 'left',
+            args: { y: 6 }
+        },
+        markup: [{
+            tagName: 'text',
+            selector: 'label',
+            className: 'label-text'
+        }]
+    },
+    markup: [{
+        tagName: 'circle',
+        selector: 'portBody'
+    }]
+};
+const portsEsclip =[
+    { 
+        group: 'in',
+        attrs: { label: { text: 'in1' }}
+    },
+    { 
+        group: 'in',
+        attrs: { label: { text: 'in2' }}
+    },
+    { 
+        group: 'in',
+        attrs: { label: { text: 'in3' }}
+    },
+    {
+        group: 'out',
+        attrs: { label: { text: 'out1' }}
+    },
+    {
+        group: 'out',
+        attrs: { label: { text: 'out2' }}
+    }
+]
+const makeModelEllipse = (text, id) => {
+    let a = new joint.shapes.standard.Ellipse({
+        id,
+        position: { x: 125, y: 60 },
+        size: { width: 100, height: 75 },
+        attrs: {
+            root: {
+                magnet: false
+            },
+            body: {
+                fill: '#8ECAE6'
+            },
+            label: {
+                text,
+                fontSize: 16
+            }
+        },
+        ports: {
+            groups: {
+                'in': ellipsePortsIn,
+                'out': ellipsePortsOut
+            }
+        }
+    });
+    return a;
+}
+const makeModel = (text, id) => {
     let a = new joint.shapes.standard.Rectangle({
-        position: { x: 125, y: 50 },
+        id: id,
+        position: { x: 125, y: 150 },
         size: { width: 90, height: 90 },
         attrs: {
             root: {
@@ -331,67 +440,85 @@ var makeModel = (text) => {
     });
     return a;
 };
+
 const ports = [
     {
         id: 'in1',
         group: 'in',
-        attrs: { label: { text: 'in1' } }
+        attrs: { label: { text: 'input' } }
     },
-    {
-        id: 'in2',
-        group: 'in',
-        attrs: { label: { text: 'in2' } }
-    },
+   
     {
         id: 'out1',
         group: 'out',
-        attrs: { label: { text: 'out1' } }
+        attrs: { label: { text: 'OK' } }
     },
     {
         id: 'out2',
         group: 'out',
-        attrs: { label: { text: 'out2' } }
+        attrs: { label: { text: 'Not OK' } }
     }
 ]
-const model = makeModel('trung')
-model.addPorts(ports);
-const model2 = makeModel('trung').translate(300, 0)
-model2.addPorts(ports);
-// var model2 = model.clone().translate(300, 0).attr('label/text', 'Model 2');
+
+function deleteLink(paper) {
+    paper.on('link:mouseenter', (linkView) => {
+        showLinkTools(linkView);
+    });
+
+    paper.on('link:mouseleave', (linkView) => {
+        linkView.removeTools();
+    });
+}
+
+
+// const model2 = model.clone().translate(300, 0).attr('label/text', 'Model 2');
 
 function App() {
     const jsonData = data;
-    var namespace = joint.shapes;
-    var cells = [];
-    var links = [];
-    const mapCells = []
+    const namespace = joint.shapes;
+    const cells = [];
+    const links = [];
+    const testModel = [];
+    const mapCells = [];
+    const graph = new joint.dia.Graph({}, { cellNamespace: namespace });
 
 
-    addToCells(jsonData, cells, links, mapCells)
-    putCellsToMapCells(cells, mapCells)
-    addToMapCells(jsonData, mapCells)
-    setYforMapCells(mapCells)
+    addToCells(jsonData, cells, links, testModel);
+    putCellsToMapCells(cells, mapCells);
+    addToMapCells(jsonData, mapCells);
+    setYforMapCells(mapCells);
     setPosition(cells, mapCells);
 
-    console.log('data', cells)
-    console.log('data map', mapCells)
+    // console.log('data', cells)
+    // console.log('data map', mapCells)
 
-    var graph = new joint.dia.Graph({}, { cellNamespace: namespace });
-    graph.resetCells([...cells, ...links]);
+    graph.addCells([...cells, ...links]);
 
-    graph.addCells(model, model2);
+
+    const model = makeModel('trung', 'model1')
+    model.addPorts(ports);
+    const model2 = makeModel('trung2', 'model2').translate(300, 0)
+    model2.addPorts(ports);
+    testModel.push(model);
+    testModel.push(model2);
     connect(model, 'out2', model2, 'in1', graph);
 
+    graph.addCells(testModel);
+    console.log('testModel final: ', testModel);
+
+    const esclip = makeModelEllipse("esclip", "esclip")
+    esclip.addPorts(portsEsclip)
+    graph.addCell(esclip)
     useEffect(() => {
 
-        var paper = new joint.dia.Paper({
+        const paper = new joint.dia.Paper({
             el: document.getElementById('myholder'),
             model: graph,
             width: '100%',
             height: '100%',
             gridSize: 20,
             cellViewNamespace: namespace,
-            gridSize: 1,
+            gridSize: 2,
             model: graph,
             linkPinning: false, // Prevent link being dropped in blank paper area
             defaultLink: () => new joint.shapes.standard.Link({
@@ -413,18 +540,13 @@ function App() {
                 // Disable linking interaction for magnets marked as passive.
                 return magnet.getAttribute('magnet') !== 'passive';
             },
-            // Enable mark available for cells & magnets
+            // // Enable mark available for cells & magnets
             markAvailable: true
         });
         zoompaper(paper);
-        paper.on('link:mouseenter', (linkView) => {
-            showLinkTools(linkView);
-        });
-        
-        paper.on('link:mouseleave', (linkView) => {
-            linkView.removeTools();
-        });
-    }, []);
+        deleteLink(paper)
+
+    });
 
     return (
         <div id='myholder'>
